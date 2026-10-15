@@ -2,19 +2,21 @@
 
 > **Local, Zero-Token-Cost Autonomous E-Commerce Listing Engine for Independent Sellers**
 
-CatalogCraft AI uses local open-weight vision models (via Ollama) to automatically generate high-converting e-commerce product listings from product images — completely on-device, with zero API costs.
+CatalogCraft AI uses a two-step local AI pipeline to automatically generate high-converting e-commerce product listings from product images — completely on-device, with zero API costs.
 
 ---
 
 ## ✨ Features
 
 - 📸 **Image-to-Listing** — Upload a product photo and get a full listing generated automatically
-- 🧠 **Powered by Llama 3.2 Vision** — Runs 100% locally via Ollama, no cloud dependency
+- 🔭 **Moondream Vision** — Extracts product details from images locally via Ollama
+- 🧠 **Llama 3.2 Copywriting** — Generates structured, platform-specific listings from vision output
 - 🛒 **Multi-Platform Support** — Amazon, Etsy, Shopify, Meesho
 - 🌐 **Multi-Language** — English & Hindi output
+- 💰 **Smart Pricing** — AI-suggested price range with currency & rationale, based on actual product
 - 📦 **Bulk Batch Mode** — Upload multiple images and process them all at once
 - 📥 **CSV Export** — Download listings ready for marketplace upload
-- 💰 **Zero Token Cost** — No OpenAI / Gemini API keys needed
+- 🔒 **Zero Token Cost** — No OpenAI / Gemini API keys needed
 
 ---
 
@@ -24,13 +26,12 @@ CatalogCraft AI uses local open-weight vision models (via Ollama) to automatical
 
 - Python 3.10+
 - [Ollama](https://ollama.com/) installed and running
-- `llama3.2-vision` model pulled in Ollama
-- `llama3.2` model pulled in Ollama
+- `moondream` and `llama3.2` models pulled in Ollama
 
-### 1. Pull the Vision Model
+### 1. Pull the Models
 
 ```bash
-ollama pull llama3.2-vision
+ollama pull moondream
 ollama pull llama3.2
 ```
 
@@ -70,14 +71,18 @@ App will open at `http://localhost:8501`
 ```
 Product Image
       ↓
-  [Resize & Compress]        ← optimized for speed
+  [Resize & Compress]          ← optimized for speed
       ↓
-  Llama 3.2 Vision (local)   ← via Ollama
+  Moondream (Vision Model)     ← describes product: type, color, material, features
       ↓
-  Structured JSON Output
+  Llama 3.2 (Text Model)       ← generates structured JSON listing
       ↓
-  Platform-specific Listing  ← Amazon / Etsy / Shopify / Meesho
+  Platform-specific Listing    ← Amazon / Etsy / Shopify / Meesho
 ```
+
+Two models, each doing what they do best:
+- **Moondream** → understands the image
+- **Llama 3.2** → writes the copy
 
 ---
 
@@ -86,7 +91,8 @@ Product Image
 | Layer | Technology |
 |---|---|
 | UI | Streamlit |
-| Vision Model | Llama 3.2 Vision (Ollama) |
+| Vision Model | Moondream (Ollama) |
+| Listing Model | Llama 3.2 (Ollama) |
 | Image Processing | Pillow (PIL) |
 | Data Export | Pandas |
 | Validation | Pydantic |
