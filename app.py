@@ -70,11 +70,17 @@ def generate_listing(image_bytes, notes, platform, audience, language, text_mode
 
     product_context = "\n".join(context_parts)
 
+    hindi_rule = ""
+    if language == "Hindi":
+        hindi_rule = """
+CRITICAL HINDI LANGUAGE RULE: Write ALL text in pure Devanagari Hindi script. Do NOT use any English words or Latin characters anywhere in the output. Transliterate English terms into Hindi Devanagari (e.g., "mesh upper" → "मेश अपर", "running shoes" → "रनिंग शूज़", "breathable" → "ब्रेथेबल", "EVA sole" → "ईवीए सोल"). Every single word must be in Devanagari script. No mixing of English and Hindi."""
+
     system_prompt = f"""You are an expert e-commerce copywriter.
 Platform: {platform}
 Rule: {platform_rule}
 Target Audience: {audience}
 Output Language: {language}
+{hindi_rule}
 
 For 'suggested_price_strategy': Give the actual specific price range with correct currency symbol (use ₹ for Indian products, $ for US/global). Example format: ₹799–₹1299. Then add one short sentence explaining why. Do NOT copy examples, generate real numbers based on product type and quality.
 
@@ -89,15 +95,16 @@ Output ONLY raw JSON with this structure, no markdown, no explanation:
 }}"""
 
     try:
-        resp = ollama.chat(
-            model=text_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Create a listing for this product:\n\n{product_context}"}
-            ],
-            format="json",
-            options={"temperature": 0.25}
-        )
+        with st.spinner(f"✍️ Step 2/2: {text_model} writing listing..."):
+            resp = ollama.chat(
+                model=text_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Create a listing for this product:\n\n{product_context}"}
+                ],
+                format="json",
+                options={"temperature": 0.25}
+            )
         return json.loads(resp.message.content)
     except Exception as e:
         st.error(f"Error generating listing: {e}")
@@ -138,10 +145,9 @@ with tab1:
             if not uploaded and not notes.strip():
                 st.warning("Please upload an image or add some notes.")
             else:
-                with st.spinner("Step 2/2: llama3.2 writing listing..."):
-                    result = generate_listing(img_bytes, notes, platform, audience, language)
-                    if result:
-                        st.session_state["result"] = result
+                result = generate_listing(img_bytes, notes, platform, audience, language)
+                if result:
+                    st.session_state["result"] = result
 
         if "result" in st.session_state:
             r = st.session_state["result"]
